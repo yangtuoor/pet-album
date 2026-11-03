@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef5ef">
+<title>毛毛的小角落 · 图册与故事册</title>
+<meta name="description" content="一只小动物的图册与故事册：上传照片和视频，按时间自动排好。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%238fbf9f'%3E%3Cellipse cx='30' cy='34' rx='11' ry='14'/%3E%3Cellipse cx='52' cy='26' rx='11' ry='15'/%3E%3Cellipse cx='74' cy='34' rx='10' ry='13'/%3E%3Cellipse cx='86' cy='56' rx='9' ry='11'/%3E%3Cpath d='M50 44c14 0 26 12 26 24 0 10-9 16-19 12-5-2-9-2-14 0-10 4-19-2-19-12 0-12 12-24 26-24z'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- 纸张/毛绒颗粒纹理 -->
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="paperNoise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#paperNoise)"/>
+</svg>
+
+<!-- 背景光斑 -->
+<div class="aurora" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+</div>
+
+<!-- 页面入场遮罩 -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <svg viewBox="0 0 100 100" class="curtain-paw"><g fill="currentColor">
+    <ellipse cx="30" cy="34" rx="11" ry="14"/><ellipse cx="52" cy="26" rx="11" ry="15"/>
+    <ellipse cx="74" cy="34" rx="10" ry="13"/><ellipse cx="86" cy="56" rx="9" ry="11"/>
+    <path d="M50 44c14 0 26 12 26 24 0 10-9 16-19 12-5-2-9-2-14 0-10 4-19-2-19-12 0-12 12-24 26-24z"/>
+  </g></svg>
+  <span>轻轻翻开…</span>
+</div>
+
+<a class="skip" href="#album">跳到图册</a>
+
+<header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-paw" viewBox="0 0 100 100" aria-hidden="true"><g fill="currentColor">
+        <ellipse cx="30" cy="34" rx="11" ry="14"/><ellipse cx="52" cy="26" rx="11" ry="15"/>
+        <ellipse cx="74" cy="34" rx="10" ry="13"/><ellipse cx="86" cy="57" rx="9" ry="11"/>
+        <path d="M50 44c14 0 26 12 26 24 0 10-9 16-19 12-5-2-9-2-14 0-10 4-19-2-19-12 0-12 12-24 26-24z"/>
+      </g></svg>
+      <span class="brand-name" id="brandName">毛毛的小角落</span>
+    </div>
+    <nav class="nav" aria-label="主导航">
+      <a href="#hero">首页</a>
+      <a href="#album" data-nav>图册</a>
+      <a href="#stories" data-nav>故事</a>
+      <a href="#about">关于</a>
+    </nav>
+    <div class="actions">
+      <button class="icon-btn" id="btnMusic" type="button" title="背景音乐" aria-label="开关背景音乐">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="6.6" cy="18" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16.6" cy="16" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+      <button class="icon-btn" id="btnMenu" type="button" title="更多" aria-label="更多操作">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18" cy="12" r="1.6" fill="currentColor"/></svg>
+      </button>
+      <button class="btn btn-primary" id="btnUpload" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5m0 0L7.5 9.5M12 5l4.5 4.5M5 17.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="btn-label">上传照片 / 视频</span>
+      </button>
+    </div>
+  </div>
+  <div class="progress" id="uploadProgress" hidden><span></span></div>
+</header>
+
+<main>
+  <!-- ===================== 首屏 ===================== -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <p class="eyebrow reveal" data-reveal="0">A LITTLE LIFE, KEPT SOFTLY</p>
+      <h1 class="hero-title" id="heroTitle">
+        <span class="line"><span class="word" data-split data-i="0">毛毛的</span><span class="word" data-split data-i="1">小角落</span></span>
+      </h1>
+      <p class="hero-sub reveal" data-reveal="2" id="heroTagline">把每一天的软时刻留在这里。<br class="only-mobile">一张照片、一段视频、几句写给它的话。</p>
+
+      <div class="hero-stats reveal" data-reveal="3">
+        <div class="stat"><b id="statDays">0</b><span>一起生活了 <em>天</em></span></div>
+        <div class="stat"><b id="statPhotos">0</b><span>张照片</span></div>
+        <div class="stat"><b id="statVideos">0</b><span>段视频</span></div>
+        <div class="stat"><b id="statStories">0</b><span>个故事</span></div>
+      </div>
+
+      <div class="hero-cta reveal" data-reveal="4">
+        <button class="btn btn-primary btn-lg" data-open-upload type="button">开始添加回忆</button>
+        <a class="btn btn-ghost btn-lg" href="#stories">读一个故事</a>
+      </div>
+    </div>
+
+    <!-- 叠放的照片卡片 -->
+    <div class="hero-cards" id="heroCards" aria-hidden="true">
+      <div class="floating-card c1"><div class="ph"></div><div class="ph-empty"></div></div>
+      <div class="floating-card c2"><div class="ph"></div><div class="ph-empty"></div></div>
+      <div class="floating-card c3"><div class="ph"></div><div class="ph-empty"></div></div>
+      <div class="hero-pet">
+        <div class="avatar-ring"><div class="avatar" id="heroAvatar"></div></div>
+      </div>
+    </div>
+
+    <a class="scroll-hint" href="#album" aria-label="向下滚动">
+      <span></span>
+    </a>
+  </section>
+
+  <!-- ===================== 图册 ===================== -->
+  <section class="album" id="album">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow reveal" data-reveal="0">ALBUM · 全部回忆</p>
+        <h2 class="reveal" data-reveal="1">图册</h2>
+      </div>
+      <div class="section-tools reveal" data-reveal="2">
+        <div class="segmented" role="tablist" aria-label="视图切换">
+          <button role="tab" data-view="magazine" class="active" aria-selected="true">杂志流</button>
+          <button role="tab" data-view="timeline" aria-selected="false">时间线</button>
+          <button role="tab" data-view="grid" aria-selected="false">九宫格</button>
+        </div>
+        <div class="field select-wrap">
+          <select id="sortMode" aria-label="排序方式">
+            <option value="auto">自动排序 · 拍摄时间</option>
+            <option value="newest">最新优先</option>
+            <option value="oldest">最早优先</option>
+            <option value="fav">收藏优先</option>
+            <option value="manual">手动顺序</option>
+          </select>
+        </div>
+        <button class="icon-btn" id="btnExport" type="button" title="导出为单个 HTML">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-row reveal" data-reveal="3">
+      <div class="chips" id="typeChips">
+        <button class="chip active" data-type="all" type="button">全部</button>
+        <button class="chip" data-type="image" type="button">照片</button>
+        <button class="chip" data-type="video" type="button">视频</button>
+        <button class="chip" data-type="fav" type="button">收藏</button>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <input id="searchInput" type="search" placeholder="按标题、备注、文件名搜索" aria-label="搜索">
+      </div>
+    </div>
+
+    <div class="album-body" id="albumBody">
+      <div class="spinner" id="albumLoading" hidden><span></span></div>
+      <div class="magazine" id="magazine"></div>
+      <div class="timeline" id="timeline" hidden></div>
+      <div class="grid" id="grid" hidden></div>
+      <div class="empty" id="albumEmpty" hidden>
+        <svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M16 34h62a6 6 0 0 1 6 6v44a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6z"/>
+          <circle cx="47" cy="58" r="13"/><path d="m34 90 22-24 14 15 10-9 14 18"/>
+        </g></svg>
+        <h3>还没有照片</h3>
+        <p>把手机里的照片和视频拖到这儿，或者点下面的按钮。</p>
+        <button class="btn btn-primary" data-open-upload type="button">上传回忆</button>
+      </div>
+    </div>
+
+    <button class="load-more" id="loadMore" hidden type="button">再看一些</button>
+  </section>
+
+  <!-- ===================== 故事册 ===================== -->
+  <section class="stories" id="stories">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow reveal" data-reveal="0">STORYBOOK · 写给它的话</p>
+        <h2 class="reveal" data-reveal="1">故事册</h2>
+      </div>
+      <div class="section-tools reveal" data-reveal="2">
+        <div class="segmented" role="tablist" aria-label="故事视图">
+          <button role="tab" data-story-view="cards" class="active" aria-selected="true">卡片集</button>
+          <button role="tab" data-story-view="timeline" aria-selected="false">时间线</button>
+        </div>
+        <button class="btn btn-primary" id="btnNewStory" type="button">写一个故事</button>
+      </div>
+    </div>
+
+    <div class="story-stage" id="storyStage">
+      <div class="story-cards" id="storyCards"></div>
+      <div class="story-timeline" id="storyTimeline" hidden></div>
+      <div class="empty" id="storyEmpty" hidden>
+        <svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M20 26h34a6 6 0 0 1 6 6v62a10 10 0 0 0-10-6H20z"/><path d="M100 26H66a6 6 0 0 0-6 6v62a10 10 0 0 1 10-6h30z"/>
+        </g></svg>
+        <h3>第一个故事还空着</h3>
+        <p>它今天做了什么？睡在哪儿？第一次见你在什么时候？</p>
+        <button class="btn btn-primary" id="btnNewStory2" type="button">写下来</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 关于 ===================== -->
+  <section class="about" id="about">
+    <div class="about-grid">
+      <div class="about-text">
+        <p class="eyebrow reveal" data-reveal="0">ABOUT · 关于它</p>
+        <h2 class="reveal" data-reveal="1">关于 <span id="aboutName">毛毛</span></h2>
+        <p class="reveal" data-reveal="2" id="aboutBio">在这里写它的性格、怪癖、喜欢的东西。</p>
+        <dl class="facts reveal" data-reveal="3" id="facts"></dl>
+        <button class="btn btn-ghost" id="btnEditPet" type="button">编辑宠物信息</button>
+      </div>
+      <div class="about-photo reveal" data-reveal="2">
+        <div class="frame"><div id="aboutAvatar" class="avatar big"></div></div>
+        <div class="sticker">今天也要开心</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p class="foot-title" id="footTitle">毛毛的小角落</p>
+    <p class="foot-sub">照片与故事都存在这里，慢慢来。</p>
+    <p class="foot-meta"><span id="footCount">0 张照片 · 0 段故事</span> · <a href="#hero">回到顶部</a></p>
+  </div>
+</footer>
+
+<!-- ===================== 上传弹层 ===================== -->
+<div class="sheet" id="uploadSheet" hidden>
+  <div class="sheet-mask" data-close></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+    <header class="sheet-head">
+      <h3 id="uploadTitle">添加回忆</h3>
+      <button class="icon-btn" data-close type="button" aria-label="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="dropzone" id="dropzone" tabindex="0">
+      <input id="fileInput" type="file" accept="image/*,video/*" multiple hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5m0 0L7.5 9.5M12 5l4.5 4.5M5 17.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p><b>拖进来，或者点击选择</b></p>
+      <p class="muted">支持 JPG / PNG / WebP / HEIC / MP4 / MOV / WebM，视频会自动取首帧当封面。</p>
+    </div>
+    <ul class="upload-list" id="uploadList"></ul>
+    <footer class="sheet-foot">
+      <span class="muted" id="uploadHint">照片会自动读取拍摄时间排序</span>
+      <div class="sheet-foot-actions">
+        <button class="btn btn-ghost" data-close type="button">稍后再说</button>
+        <button class="btn btn-primary" id="btnPickFiles" type="button">选择文件</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== 故事编辑弹层 ===================== -->
+<div class="sheet" id="storySheet" hidden>
+  <div class="sheet-mask" data-close></div>
+  <div class="sheet-panel wide" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+    <header class="sheet-head">
+      <h3 id="storyTitle">写一个故事</h3>
+      <button class="icon-btn" data-close type="button" aria-label="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <form class="story-form" id="storyForm">
+      <input type="hidden" id="storyId">
+      <label class="field">
+        <span>标题</span>
+        <input id="storyInputTitle" maxlength="60" placeholder="比如：第一次趴在窗台上睡着" required>
+      </label>
+      <div class="row2">
+        <label class="field">
+          <span>日期</span>
+          <input id="storyInputDate" type="date">
+        </label>
+        <label class="field">
+          <span>心情</span>
+          <select id="storyInputMood">
+            <option value="">选一个</option>
+            <option value="开心">开心</option>
+            <option value="懒散">懒散</option>
+            <option value="黏人">黏人</option>
+            <option value="好奇">好奇</option>
+            <option value="生病">生病</option>
+            <option value="想你">想你</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>正文</span>
+        <textarea id="storyInputBody" rows="7" placeholder="那天下午三点……"></textarea>
+      </label>
+      <div class="field">
+        <span>配图（点选这张照片当时的样子）</span>
+        <div class="picker" id="mediaPicker"></div>
+      </div>
+      <footer class="sheet-foot">
+        <button class="btn btn-danger-ghost" id="btnDeleteStory" type="button" hidden>删除这篇</button>
+        <div class="sheet-foot-actions">
+          <button class="btn btn-ghost" data-close type="button">取消</button>
+          <button class="btn btn-primary" id="btnSaveStory" type="submit">收进故事册</button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== 宠物信息弹层 ===================== -->
+<div class="sheet" id="petSheet" hidden>
+  <div class="sheet-mask" data-close></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="petTitle">
+    <header class="sheet-head">
+      <h3 id="petTitle">编辑宠物信息</h3>
+      <button class="icon-btn" data-close type="button" aria-label="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <form class="story-form" id="petForm">
+      <label class="field"><span>名字</span><input id="petName" maxlength="20"></label>
+      <div class="row2">
+        <label class="field"><span>种类</span><input id="petSpecies" maxlength="12" placeholder="猫 / 狗 / 兔"></label>
+        <label class="field"><span>品种</span><input id="petBreed" maxlength="24"></label>
+      </div>
+      <div class="row2">
+        <label class="field"><span>生日</span><input id="petBirthday" type="date"></label>
+        <label class="field"><span>来到家的日子</span><input id="petHome" type="date"></label>
+      </div>
+      <label class="field"><span>简介</span><textarea id="petBio" rows="4"></textarea></label>
+      <label class="field"><span>站点标题</span><input id="siteTitle" maxlength="30"></label>
+      <footer class="sheet-foot">
+        <span class="muted">存到服务端，刷新不丢</span>
+        <div class="sheet-foot-actions">
+          <button class="btn btn-ghost" data-close type="button">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== 更多菜单 ===================== -->
+<div class="menu-pop" id="menuPop" hidden>
+  <button type="button" id="menuUpload">上传照片 / 视频</button>
+  <button type="button" id="menuStory">写一个故事</button>
+  <button type="button" id="menuMusic">背景音乐：关</button>
+  <button type="button" id="menuExport">导出为单个 HTML</button>
+  <button type="button" id="menuPet">编辑宠物信息</button>
+</div>
+
+<!-- ===================== 灯箱 ===================== -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-close" data-lb-close type="button" aria-label="关闭">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+  <button class="lb-nav prev" data-lb-prev type="button" aria-label="上一张">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="lb-nav next" data-lb-next type="button" aria-label="下一张">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <figure class="lb-figure" id="lbFigure"></figure>
+  <div class="lb-side" id="lbSide">
+    <div class="lb-date" id="lbDate"></div>
+    <h3 id="lbTitle"></h3>
+    <p id="lbNote" class="lb-note"></p>
+    <div class="lb-meta" id="lbMeta"></div>
+    <div class="lb-actions">
+      <button class="btn btn-ghost sm" id="lbFav" type="button">收藏</button>
+      <button class="btn btn-danger-ghost sm" id="lbDelete" type="button">移出图册</button>
+    </div>
+  </div>
+</div>
+
+<audio id="bgm" loop preload="none"></audio>
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+</body>
+</html>

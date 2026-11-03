@@ -1,0 +1,16 @@
+{
+  "name": "pet-album",
+  "version": "1.0.0",
+  "private": true,
+  "description": "宠物图册与故事册网站：上传照片/视频、按拍摄时间自动排序、卡片集 + 时间线双视图、导出单文件 HTML",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node build.js",
+    "dev": "node build.js && node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

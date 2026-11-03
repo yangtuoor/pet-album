@@ -1,0 +1,33 @@
+# 依赖与构建缓存
+node_modules/
+*.log
+
+# 数据：任何人 clone 下来都是空站点，数据只留在部署机上
+data/
+!data/.gitkeep
+.env
+*.env
+r2.env
+
+# 构建产物（clone 后跑 node build.js 生成）
+dist/
+
+# 测试、调试、截图脚本一律不进仓库（里面带着本机路径、私有口令、CDP 端口）
+_*.js
+_diag*.js
+_shoot*.js
+_probe*.js
+_test_*.js
+*.py
+
+# 截图与临时目录
+.tmp/
+shots/
+*.png
+*.jpg
+*.jpeg
+*.webp
+!public/**/*.png
+!public/**/*.jpg
+*.tgz
+*.zip

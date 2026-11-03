@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#eef5ef">
+<title>后台 · 毛毛的小角落</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%238fbf9f'%3E%3Cellipse cx='30' cy='34' rx='11' ry='14'/%3E%3Cellipse cx='52' cy='26' rx='11' ry='15'/%3E%3Cellipse cx='74' cy='34' rx='10' ry='13'/%3E%3Cellipse cx='86' cy='56' rx='9' ry='11'/%3E%3Cpath d='M50 44c14 0 26 12 26 24 0 10-9 16-19 12-5-2-9-2-14 0-10 4-19-2-19-12 0-12 12-24 26-24z'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f3f7f2; --paper: #fbfdfa; --ink: #2f3a35; --ink-2: #4a5a52; --muted: #7d8f85;
+    --line: #dbe7de; --line-2: #cddfd3; --green: #8fbf9f; --green-d: #5e9778;
+    --blue: #9fc1d1; --sun: #f0d9a8; --rose: #e8b3ae;
+    --shadow-sm: 0 2px 10px rgba(63,95,76,.06); --shadow: 0 10px 30px rgba(63,95,76,.10);
+    --shadow-lg: 0 22px 60px rgba(48,80,62,.16);
+    --r-sm: 10px; --r: 16px; --r-lg: 24px; --r-xl: 32px;
+    --ease: cubic-bezier(.22,.8,.28,1); --ease-out: cubic-bezier(.16,1,.3,1);
+    --font: "Optima","PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,sans-serif;
+    --serif: "Songti SC","Source Han Serif SC","Noto Serif SC",Georgia,serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.7;
+    background:
+      radial-gradient(1000px 520px at 12% -8%, rgba(159,193,209,.20), transparent 62%),
+      radial-gradient(860px 460px at 92% 2%, rgba(143,191,159,.22), transparent 60%),
+      linear-gradient(180deg, #eef5ef 0%, var(--bg) 40%, #f7f4ec 100%);
+    background-attachment: fixed; min-height: 100svh;
+  }
+  a { color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  input, select, textarea {
+    width: 100%; padding: 10px 13px; border-radius: var(--r-sm); border: 1px solid var(--line-2);
+    background: var(--paper); outline: none; transition: border-color .22s, box-shadow .22s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgba(143,191,159,.16); }
+  textarea { resize: vertical; line-height: 1.9; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1px solid transparent; border-radius: 999px; padding: 9px 20px; font-size: 14px;
+    letter-spacing: .04em; cursor: pointer; white-space: nowrap;
+    transition: transform .2s var(--ease), box-shadow .25s, background .25s, border-color .25s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { color: #fff; background: linear-gradient(135deg,#9ccaa9,#7fbd97 45%,#6aa98a); box-shadow: 0 8px 20px rgba(106,169,138,.28); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(106,169,138,.34); }
+  .btn-ghost { background: rgba(251,253,250,.75); border-color: var(--line-2); color: var(--ink-2); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green-d); background: #fff; }
+  .btn-danger { background: transparent; border-color: #ecd2d1; color: #b4686a; }
+  .btn-danger:hover { background: #fbeeee; }
+  .btn.sm { padding: 6px 14px; font-size: 13px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 20px 80px; }
+
+  /* ---------- 登录门 ---------- */
+  .gate {
+    position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px;
+    background: rgba(243,247,242,.92); backdrop-filter: blur(10px);
+  }
+  .gate[hidden] { display: none; }
+  .gate-card {
+    width: min(400px, 100%); background: var(--paper); border: 1px solid var(--line);
+    border-radius: var(--r-xl); box-shadow: var(--shadow-lg); padding: 34px 30px 28px;
+    animation: cardIn .5s var(--ease-out);
+  }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(.97); } }
+  .gate-card h1 { margin: 0 0 6px; font-family: var(--serif); font-size: 26px; font-weight: 500; letter-spacing: .08em; }
+  .gate-card p { margin: 0 0 22px; color: var(--muted); font-size: 13px; letter-spacing: .04em; }
+  .gate-card .field { margin-bottom: 16px; }
+  .gate-card .btn { width: 100%; }
+  .gate-err { min-height: 20px; margin-top: 12px; font-size: 13px; color: #b4686a; }
+
+  /* ---------- 顶栏 ---------- */
+  .head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+  .head h1 { margin: 0; font-family: var(--serif); font-size: 28px; font-weight: 500; letter-spacing: .08em; }
+  .head .spacer { flex: 1; }
+  .pill { font-size: 12px; letter-spacing: .1em; color: var(--green-d); background: rgba(143,191,159,.16); padding: 4px 12px; border-radius: 999px; }
+
+  .tabs { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(251,253,250,.85); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); margin-bottom: 26px; flex-wrap: wrap; }
+  .tabs button { border: 0; background: transparent; cursor: pointer; padding: 8px 18px; border-radius: 999px; font-size: 13px; color: var(--ink-2); letter-spacing: .06em; transition: all .3s var(--ease); }
+  .tabs button:hover { color: var(--green-d); }
+  .tabs button.active { background: linear-gradient(135deg,#a9d2b6,#86bd9d); color: #fff; box-shadow: 0 6px 14px rgba(106,169,138,.26); }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeUp .45s var(--ease-out); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm); padding: 24px; margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 4px; font-family: var(--serif); font-size: 20px; font-weight: 500; letter-spacing: .08em; }
+  .card .hint { margin: 0 0 20px; font-size: 13px; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field > span { font-size: 12px; color: var(--muted); letter-spacing: .12em; }
+
+  /* ---------- 首屏四宫格选择器 ---------- */
+  .hero-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 8px; }
+  .slot {
+    position: relative; border-radius: var(--r); overflow: hidden; cursor: pointer;
+    border: 1.6px dashed var(--line-2); background: linear-gradient(135deg,#eef5ef,#e6eef2);
+    aspect-ratio: 3 / 4; display: grid; place-items: center;
+    transition: border-color .25s, transform .25s var(--ease), box-shadow .25s;
+  }
+  .slot:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .slot.has { border-style: solid; border-color: var(--line); }
+  .slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .slot .lbl {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 10px; font-size: 11px;
+    letter-spacing: .14em; color: #fff; text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(29,45,37,.62));
+  }
+  .slot .empty-mark { font-size: 12px; color: var(--green-d); opacity: .7; letter-spacing: .16em; text-align: center; padding: 0 8px; }
+  .slot .clear {
+    position: absolute; right: 6px; top: 6px; width: 26px; height: 26px; border-radius: 50%;
+    border: 0; background: rgba(251,253,250,.9); color: #b4686a; cursor: pointer; font-size: 15px;
+    display: grid; place-items: center; opacity: 0; transition: opacity .2s;
+  }
+  .slot:hover .clear { opacity: 1; }
+  .switch-row { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; font-size: 14px; color: var(--ink-2); }
+  .switch-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--green-d); }
+
+  /* ---------- 媒体网格 ---------- */
+  .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px,1fr)); gap: 10px; }
+  .m-item {
+    position: relative; aspect-ratio: 1; border-radius: var(--r-sm); overflow: hidden;
+    background: var(--line) center/cover no-repeat; border: 1px solid var(--line);
+  }
+  .m-item img { width: 100%; height: 100%; object-fit: cover; }
+  .m-item .del {
+    position: absolute; right: 5px; top: 5px; width: 26px; height: 26px; border-radius: 50%;
+    border: 0; background: rgba(251,253,250,.92); color: #b4686a; cursor: pointer;
+    display: grid; place-items: center; font-size: 14px; opacity: 0; transition: opacity .2s;
+  }
+  .m-item:hover .del { opacity: 1; }
+  .m-item .tag {
+    position: absolute; left: 5px; bottom: 5px; font-size: 10px; letter-spacing: .1em;
+    padding: 2px 8px; border-radius: 999px; background: rgba(251,253,250,.88); color: var(--ink-2);
+  }
+  .m-item .tag.on { background: var(--green-d); color: #fff; }
+
+  .drop {
+    display: grid; justify-items: center; gap: 6px; text-align: center; padding: 30px 20px;
+    border-radius: var(--r-lg); border: 1.6px dashed var(--line-2); cursor: pointer;
+    background: linear-gradient(180deg,#f9fcf9,#f2f7f3); color: var(--muted); margin-bottom: 18px;
+    transition: border-color .25s, background .25s, transform .25s var(--ease);
+  }
+  .drop.over { border-color: var(--green); background: #eff8f1; transform: scale(1.01); }
+  .drop p { margin: 0; font-size: 14px; }
+  .drop b { color: var(--ink-2); font-weight: 500; }
+  .progress { height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; margin-bottom: 14px; display: none; }
+  .progress.on { display: block; }
+  .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,var(--green),var(--blue)); transition: width .25s; }
+
+  /* ---------- 故事 ---------- */
+  .story-row {
+    display: flex; align-items: flex-start; gap: 14px; padding: 14px 0;
+    border-bottom: 1px dashed var(--line-2);
+  }
+  .story-row:last-child { border-bottom: 0; }
+  .story-row .t { flex: 1; min-width: 0; }
+  .story-row .t b { display: block; font-size: 15px; font-weight: 500; font-family: var(--serif); letter-spacing: .04em; }
+  .story-row .t small { color: var(--muted); font-size: 12px; letter-spacing: .12em; }
+  .story-row .t p { margin: 6px 0 0; font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .story-row .acts { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .toast-wrap { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 100; display: grid; gap: 8px; justify-items: center; pointer-events: none; }
+  .toast { padding: 9px 20px; border-radius: 999px; font-size: 13px; letter-spacing: .06em; background: rgba(47,58,53,.92); color: #f4f8f4; box-shadow: var(--shadow); animation: tIn .35s var(--ease-out); }
+  .toast.err { background: rgba(150,70,72,.94); }
+  @keyframes tIn { from { opacity: 0; transform: translateY(10px); } }
+
+  .empty-hint { padding: 40px 0; text-align: center; color: var(--muted); font-size: 14px; }
+  .foot-note { margin-top: 20px; font-size: 12px; color: var(--muted); letter-spacing: .06em; }
+
+  @media (max-width: 720px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .hero-slots { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 18px; }
+    .wrap { padding: 18px 14px 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *:before, *:after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 登录门 -->
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="loginForm">
+    <h1>后台</h1>
+    <p>输入口令后可以管理照片、故事和首屏展示。</p>
+    <label class="field"><span>口令</span><input type="password" id="pass" autocomplete="current-password" placeholder="••••••"></label>
+    <button class="btn btn-primary" type="submit">进入</button>
+    <div class="gate-err" id="gateErr"></div>
+  </form>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="head">
+    <h1>后台</h1>
+    <span class="pill" id="siteLabel">毛毛的小角落</span>
+    <div class="spacer"></div>
+    <a class="btn btn-ghost sm" href="./" target="_blank" rel="noopener">看主页</a>
+    <button class="btn btn-ghost sm" id="btnLogout" type="button">退出登录</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-tab="hero" class="active" type="button">首屏展示</button>
+    <button data-tab="media" type="button">照片与视频</button>
+    <button data-tab="stories" type="button">故事</button>
+    <button data-tab="pet" type="button">资料与标题</button>
+    <button data-tab="security" type="button">口令</button>
+  </div>
+
+  <!-- 首屏展示 -->
+  <section class="panel active" data-panel="hero">
+    <div class="card">
+      <h2>首屏四张图</h2>
+      <p class="hint">点任意位置选择照片，右上角 × 清除。左边三张是叠放的卡片，最后一张是圆形头像。</p>
+      <div class="hero-slots" id="heroSlots"></div>
+      <label class="switch-row">
+        <input type="checkbox" id="heroFixed">
+        <span>固定使用以上选择（关闭时首屏自动取最新三张照片）</span>
+      </label>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btnSaveHero" type="button">保存首屏设置</button>
+        <button class="btn btn-ghost" id="btnResetHero" type="button">恢复自动</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>可用照片</h2>
+      <p class="hint">点一下即可填到当前选中的位置。</p>
+      <div class="media-grid" id="picksGrid"></div>
+      <div class="empty-hint" id="picksEmpty" hidden>还没有照片，先去「照片与视频」上传。</div>
+    </div>
+  </section>
+
+  <!-- 媒体 -->
+  <section class="panel" data-panel="media">
+    <div class="card">
+      <h2>上传</h2>
+      <p class="hint">支持图片和视频，可多选。上传后按拍摄时间自动排序。</p>
+      <div class="drop" id="drop">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 16V4m0 0L7 9m5-5l5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        <p><b>点击选择</b> 或把文件拖到这里</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
+      <div class="progress" id="prog"><i></i></div>
+    </div>
+    <div class="card">
+      <h2>全部媒体 <span class="pill" id="mediaCount">0</span></h2>
+      <p class="hint">悬停显示删除按钮。删除会同时清理故事里的引用。</p>
+      <div class="media-grid" id="mediaGrid"></div>
+      <div class="empty-hint" id="mediaEmpty" hidden>还没有任何照片或视频。</div>
+    </div>
+  </section>
+
+  <!-- 故事 -->
+  <section class="panel" data-panel="stories">
+    <div class="card">
+      <h2 id="storyFormTitle">写一个故事</h2>
+      <p class="hint">日期用 YYYY-MM-DD。正文支持换行。</p>
+      <form id="storyForm">
+        <input type="hidden" id="storyId">
+        <div class="grid2">
+          <label class="field"><span>标题</span><input id="storyTitle" required placeholder="第一次晒太阳"></label>
+          <label class="field"><span>日期</span><input id="storyDate" type="date" required></label>
+        </div>
+        <label class="field"><span>心情标签（可选）</span><input id="storyMood" placeholder="慵懒"></label>
+        <label class="field"><span>正文</span><textarea id="storyBody" rows="6" placeholder="那天中午，光落在它背上……"></textarea></label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" type="submit">保存故事</button>
+          <button class="btn btn-ghost" type="button" id="btnStoryReset">清空表单</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>已有故事</h2>
+      <div id="storyList"></div>
+      <div class="empty-hint" id="storyEmpty" hidden>还没有故事。</div>
+    </div>
+  </section>
+
+  <!-- 资料 -->
+  <section class="panel" data-panel="pet">
+    <div class="card">
+      <h2>站点与宠物</h2>
+      <p class="hint">站点标题会出现在浏览器标签、顶栏和页脚。</p>
+      <form id="petForm">
+        <label class="field"><span>站点标题</span><input id="fSiteTitle" required></label>
+        <label class="field"><span>副标题</span><input id="fTagline"></label>
+        <label class="field"><span>大标题（首屏，空格分词逐词入场）</span><input id="fHeroTitle" placeholder="毛毛的 小角落"></label>
+        <div class="grid2">
+          <label class="field"><span>宠物名字</span><input id="fName"></label>
+          <label class="field"><span>种类</span><input id="fSpecies"></label>
+          <label class="field"><span>品种</span><input id="fBreed"></label>
+          <label class="field"><span>生日</span><input id="fBirthday" type="date"></label>
+          <label class="field"><span>来家日期</span><input id="fHomeDate" type="date"></label>
+        </div>
+        <label class="field"><span>关于它</span><textarea id="fBio" rows="4" placeholder="它喜欢窗台、纸箱和雨声。"></textarea></label>
+        <button class="btn btn-primary" type="submit">保存资料</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>导出</h2>
+      <p class="hint">把整册（照片 + 故事）打包成一个单文件 HTML，可以发给别人或存档。</p>
+      <button class="btn btn-ghost" id="btnExport" type="button">导出整册</button>
+      <div class="foot-note" id="exportInfo"></div>
+    </div>
+  </section>
+
+  <!-- 口令 -->
+  <section class="panel" data-panel="security">
+    <div class="card">
+      <h2>修改口令</h2>
+      <p class="hint">至少 6 位。改完后所有已登录的设备会被强制退出。</p>
+      <form id="passForm">
+        <label class="field"><span>新口令</span><input id="newPass" type="password" autocomplete="new-password" minlength="6" required></label>
+        <label class="field"><span>再输一次</span><input id="newPass2" type="password" autocomplete="new-password" minlength="6" required></label>
+        <button class="btn btn-primary" type="submit">更新口令</button>
+      </form>
+      <div class="foot-note">
+        口令以加盐哈希保存在服务器 data/admin.json，不会随页面下发给任何人。
+        忘记口令时，删掉服务器上的这个文件并重启服务，会重新生成一次性口令并打印在日志里。
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const state = { pet: null, media: [], stories: [], slot: 0, hero: { cards: [null, null, null], avatar: null, fixed: false } };
+
+  let BASE = '';
+  try { BASE = (document.querySelector('link[rel=icon]') && '') || ''; } catch (_) {}
+
+  async function api(path, opts) {
+    const o = opts || {};
+    const res = await fetch(path, {
+      method: o.method || 'GET',
+      headers: o.body ? { 'Content-Type': 'application/json' } : undefined,
+      body: o.body ? JSON.stringify(o.body) : undefined,
+      credentials: 'same-origin',
+    });
+    // 先看状态码再解析：某些部署形态下 /api/* 会回一个 HTML 页面，res.json() 失败会把 data 留成 null
+    const raw = await res.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch (_) { data = null; }
+    if (res.status === 401) { showGate(); throw new Error((data && data.error) || '需要登录'); }
+    if (!res.ok) throw new Error((data && data.error) || ('HTTP ' + res.status));
+    if (data === null) throw new Error('接口返回的不是 JSON：' + String(raw).slice(0, 80).replace(/\s+/g, ' '));
+    return data;
+  }
+
+  function toast(msg, isErr) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (isErr ? ' err' : '');
+    el.textContent = msg;
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2200);
+    setTimeout(() => el.remove(), 2600);
+  }
+
+  function fileURL(p) { return p ? ('/files/' + String(p).replace(/^\/+/, '')) : ''; }
+  function thumbOf(it) {
+    if (!it) return '';
+    // 服务端算好的 R2 / 本地地址优先
+    if (it.type === 'video') return it.posterSrc || fileURL(it.poster || '');
+    return it.thumbSrc || it.src || fileURL(it.thumb || it.file || '');
+  }
+
+  /* ---------------- 登录 ---------------- */
+  function showGate() {
+    $('#gate').hidden = false;
+    $('#app').hidden = true;
+    setTimeout(() => $('#pass').focus(), 60);
+  }
+  function hideGate() {
+    $('#gate').hidden = true;
+    $('#app').hidden = false;
+  }
+
+  $('#loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('#gateErr').textContent = '';
+    const btn = $('#loginForm button[type=submit]');
+    if (btn) btn.disabled = true;
+    try {
+      const r = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: $('#pass').value }),
+        credentials: 'same-origin',
+      });
+      let data = null;
+      try { data = await r.json(); } catch (_) {}
+      if (!r.ok) {
+        // 429 时顺手给个「我是本机/已登录，帮我解锁」的直通按钮
+        if (r.status === 429) {
+          $('#gateErr').innerHTML = ((data && data.error) || '尝试次数过多') +
+            ' <button type="button" class="btn btn-ghost sm" id="btnUnlock" style="margin-left:6px">立即解锁</button>';
+          const ub = document.getElementById('btnUnlock');
+          if (ub) ub.addEventListener('click', async () => {
+            try {
+              const u = await fetch('/api/admin/unlock', { method: 'POST', credentials: 'same-origin' });
+              const uj = await u.json().catch(() => null);
+              $('#gateErr').textContent = u.ok ? '已解锁，请重新输入口令' : ((uj && uj.error) || '解锁失败');
+            } catch (err) { $('#gateErr').textContent = err.message; }
+          });
+        } else {
+          $('#gateErr').textContent = (data && data.error) || ('HTTP ' + r.status);
+        }
+        return;
+      }
+      $('#pass').value = '';
+      hideGate();
+      await load();
+      toast('已登录');
+    } catch (err) {
+      $('#gateErr').textContent = err.message;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+
+  $('#btnLogout').addEventListener('click', async () => {
+    try { await api('/api/admin/logout', { method: 'POST' }); } catch (_) {}
+    showGate();
+  });
+
+  /* ---------------- 载入 ---------------- */
+  async function load() {
+    const d = await api('/api/bootstrap');
+    if (!d || !d.pet) throw new Error('读取站点数据失败');
+    state.pet = d.pet;
+    state.media = d.media || [];
+    state.stories = d.stories || [];
+    const h = state.pet.hero || {};
+    state.hero = {
+      cards: (h.cards || [null, null, null]).slice(0, 3),
+      avatar: h.avatar || null,
+      fixed: !!h.fixed,
+    };
+    while (state.hero.cards.length < 3) state.hero.cards.push(null);
+    $('#siteLabel').textContent = state.pet.siteTitle || '毛毛的小角落';
+    renderHero(); renderPicks(); renderMedia(); renderStories(); fillPetForm(); await fillHeroTitle();
+  }
+
+  // 同步读取主页 HTML，拿首屏大标题的分词
+  async function fetchHeroTitle() {
+    try {
+      const res = await fetch('./', { credentials: 'same-origin' });
+      const html = await res.text();
+      const m = html.match(/<h1[^>]*id="heroTitle"[^>]*>([\s\S]*?)<\/h1>/i);
+      if (!m) return '';
+      const words = [];
+      const re = /<span[^>]*class="[^"]*\bword\b[^"]*"[^>]*>([\s\S]*?)<\/span>/gi;
+      let x;
+      while ((x = re.exec(m[1]))) words.push(x[1].replace(/<[^>]*>/g, '').trim());
+      return words.filter(Boolean).join(' ');
+    } catch (_) { return ''; }
+  }
+
+  // 大标题保存进 pet.json 的 heroTitle；取不到就用宠物名兜底
+  async function resolveHeroTitle() {
+    const v = await fetchHeroTitle();
+    if (v) return v;
+    const n = (state.pet && state.pet.pet && state.pet.pet.name) || '毛毛';
+    return n + ' 的小角落';
+  }
+
+  /* ---------------- 首屏 ---------------- */
+  const SLOT_LABELS = ['卡片一', '卡片二', '卡片三', '头像'];
+  function mediaById(id) { return state.media.find((m) => m.id === id) || null; }
+  function slotValue(i) { return i < 3 ? state.hero.cards[i] : state.hero.avatar; }
+  function setSlot(i, v) {
+    if (i < 3) state.hero.cards[i] = v; else state.hero.avatar = v;
+    renderHero();
+  }
+
+  function renderHero() {
+    const box = $('#heroSlots');
+    box.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const v = slotValue(i);
+      const it = v ? mediaById(v) : null;
+      const src = it ? thumbOf(it) : '';
+      const el = document.createElement('div');
+      el.className = 'slot' + (src ? ' has' : '');
+      el.innerHTML = src
+        ? '<img src="' + src + '" alt=""><span class="lbl">' + SLOT_LABELS[i] + '</span><button class="clear" type="button" title="清除">×</button>'
+        : '<span class="empty-mark">' + SLOT_LABELS[i] + '<br>点此选择</span>';
+      el.addEventListener('click', (e) => {
+        if (e.target.classList.contains('clear')) { e.stopPropagation(); setSlot(i, null); return; }
+        state.slot = i;
+        markSlot();
+        toast('已选中「' + SLOT_LABELS[i] + '」，点下方照片填入');
+      });
+      box.appendChild(el);
+    }
+    $('#heroFixed').checked = state.hero.fixed;
+    markSlot();
+  }
+  function markSlot() {
+    $$('#heroSlots .slot').forEach((el, i) => {
+      el.style.outline = i === state.slot ? '2px solid var(--green-d)' : '';
+      el.style.outlineOffset = i === state.slot ? '2px' : '';
+    });
+  }
+
+  function renderPicks() {
+    const grid = $('#picksGrid');
+    grid.innerHTML = '';
+    const list = state.media.filter((m) => m.type === 'image');
+    const used = new Set([...state.hero.cards, state.hero.avatar].filter(Boolean));
+    list.forEach((it) => {
+      const src = thumbOf(it);
+      const el = document.createElement('div');
+      el.className = 'm-item';
+      el.style.backgroundImage = src ? 'url("' + src + '")' : '';
+      el.innerHTML = '<span class="tag' + (used.has(it.id) ? ' on' : '') + '">' + (used.has(it.id) ? '已用' : '') + '</span>';
+      el.addEventListener('click', () => { setSlot(state.slot, it.id); renderPicks(); toast(SLOT_LABELS[state.slot] + ' 已设为这张'); });
+      grid.appendChild(el);
+    });
+    $('#picksEmpty').hidden = list.length > 0;
+  }
+
+  $('#btnSaveHero').addEventListener('click', async () => {
+    try {
+      await api('/api/pet', {
+        method: 'POST',
+        body: { hero: { cards: state.hero.cards, avatar: state.hero.avatar, fixed: $('#heroFixed').checked } },
+      });
+      state.hero.fixed = $('#heroFixed').checked;
+      toast('首屏设置已保存');
+    } catch (e) { toast(e.message, true); }
+  });
+  $('#btnResetHero').addEventListener('click', async () => {
+    try {
+      await api('/api/pet', { method: 'POST', body: { hero: { cards: [null, null, null], avatar: null, fixed: false } } });
+      state.hero = { cards: [null, null, null], avatar: null, fixed: false };
+      renderHero(); renderPicks(); toast('已恢复自动取最新');
+    } catch (e) { toast(e.message, true); }
+  });
+  $('#heroFixed').addEventListener('change', () => {});
+
+  /* ---------------- 媒体 ---------------- */
+  function renderMedia() {
+    const g = $('#mediaGrid');
+    g.innerHTML = '';
+    state.media.forEach((it) => {
+      const src = thumbOf(it);
+      const el = document.createElement('div');
+      el.className = 'm-item';
+      el.style.backgroundImage = src ? 'url("' + src + '")' : '';
+      el.title = it.originalName || '';
+      el.innerHTML = '<button class="del" type="button" title="删除">×</button>' + (it.type === 'video' ? '<span class="tag">视频</span>' : '');
+      $('.del', el).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('删除这张？故事里对它的引用也会一并清理。')) return;
+        try {
+          await api('/api/media', { method: 'POST', body: { ids: [it.id], delete: true } });
+          await load(); toast('已删除');
+        } catch (err) { toast(err.message, true); }
+      });
+      g.appendChild(el);
+    });
+    $('#mediaCount').textContent = state.media.length;
+    $('#mediaEmpty').hidden = state.media.length > 0;
+  }
+
+  function uploadFiles(files) {
+    if (!files || !files.length) return;
+    const fd = new FormData();
+    for (const f of files) fd.append('files', f);
+    const prog = $('#prog');
+    prog.classList.add('on');
+    $('i', prog).style.width = '2%';
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload');
+    xhr.withCredentials = true;
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) $('i', prog).style.width = Math.round((e.loaded / e.total) * 96) + '%';
+    };
+    xhr.onload = async () => {
+      prog.classList.remove('on');
+      $('i', prog).style.width = '0';
+      if (xhr.status === 200) {
+        let n = 0;
+        try { n = (JSON.parse(xhr.responseText).added || []).length; } catch (_) {}
+        await load(); toast('已上传 ' + n + ' 个文件');
+      } else if (xhr.status === 401) {
+        showGate(); toast('登录已过期', true);
+      } else {
+        toast('上传失败：HTTP ' + xhr.status, true);
+      }
+    };
+    xhr.onerror = () => { prog.classList.remove('on'); toast('上传失败，网络错误', true); };
+    xhr.send(fd);
+  }
+
+  $('#drop').addEventListener('click', () => $('#fileInput').click());
+  $('#fileInput').addEventListener('change', (e) => { uploadFiles(e.target.files); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach((t) => $('#drop').addEventListener(t, (e) => { e.preventDefault(); $('#drop').classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((t) => $('#drop').addEventListener(t, (e) => { e.preventDefault(); $('#drop').classList.remove('over'); }));
+  $('#drop').addEventListener('drop', (e) => { uploadFiles(e.dataTransfer.files); });
+
+  /* ---------------- 故事 ---------------- */
+  function renderStories() {
+    const box = $('#storyList');
+    box.innerHTML = '';
+    const list = state.stories.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    list.forEach((s) => {
+      const row = document.createElement('div');
+      row.className = 'story-row';
+      row.innerHTML = '<div class="t"><small>' + (s.date || '') + (s.mood ? ' · ' + s.mood : '') + '</small><b></b><p></p></div>' +
+        '<div class="acts"><button class="btn btn-ghost sm" type="button" data-a="edit">编辑</button><button class="btn btn-danger sm" type="button" data-a="del">删除</button></div>';
+      $('b', row).textContent = s.title || '（无标题）';
+      $('p', row).textContent = s.body || '';
+      $('[data-a=edit]', row).addEventListener('click', () => {
+        $('#storyId').value = s.id;
+        $('#storyTitle').value = s.title || '';
+        $('#storyDate').value = (s.date || '').slice(0, 10);
+        $('#storyMood').value = s.mood || '';
+        $('#storyBody').value = s.body || '';
+        $('#storyFormTitle').textContent = '编辑故事';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      $('[data-a=del]', row).addEventListener('click', async () => {
+        if (!confirm('删除这个故事？')) return;
+        try { await api('/api/stories/' + encodeURIComponent(s.id), { method: 'DELETE' }); await load(); toast('已删除'); }
+        catch (e) { toast(e.message, true); }
+      });
+      box.appendChild(row);
+    });
+    $('#storyEmpty').hidden = list.length > 0;
+  }
+
+  $('#storyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = $('#storyId').value;
+    const body = {
+      title: $('#storyTitle').value.trim(),
+      date: $('#storyDate').value,
+      mood: $('#storyMood').value.trim(),
+      body: $('#storyBody').value,
+    };
+    try {
+      if (id) await api('/api/stories/' + encodeURIComponent(id), { method: 'PATCH', body });
+      else await api('/api/stories', { method: 'POST', body });
+      resetStoryForm();
+      await load();
+      toast('故事已保存');
+    } catch (err) { toast(err.message, true); }
+  });
+  function resetStoryForm() {
+    $('#storyId').value = '';
+    $('#storyForm').reset();
+    $('#storyFormTitle').textContent = '写一个故事';
+  }
+  $('#btnStoryReset').addEventListener('click', resetStoryForm);
+
+  /* ---------------- 资料 ---------------- */
+  const HERO_TITLE_KEY = '__heroTitle';
+  // 正在编辑的资料表单不要被重新载入覆盖
+  let petFormDirty = false;
+  const PET_INPUTS = ['#fSiteTitle', '#fTagline', '#fName', '#fSpecies', '#fBreed', '#fBirthday', '#fHomeDate', '#fBio', '#fHeroTitle'];
+  function fillPetForm() {
+    if (petFormDirty) return;
+    const p = state.pet || {};
+    const pet = p.pet || {};
+    $('#fSiteTitle').value = p.siteTitle || '';
+    $('#fTagline').value = p.tagline || '';
+    $('#fName').value = pet.name || '';
+    $('#fSpecies').value = pet.species || '';
+    $('#fBreed').value = pet.breed || '';
+    $('#fBirthday').value = (pet.birthday || '').slice(0, 10);
+    $('#fHomeDate').value = (pet.homeDate || '').slice(0, 10);
+    $('#fBio').value = pet.bio || '';
+  }
+  PET_INPUTS.forEach((sel) => {
+    const el = $(sel);
+    if (el) el.addEventListener('input', () => { petFormDirty = true; });
+  });
+  async function fillHeroTitle() {
+    if (!petFormDirty) $('#fHeroTitle').value = await resolveHeroTitle();
+  }
+
+  $('#petForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = {
+      siteTitle: $('#fSiteTitle').value.trim(),
+      tagline: $('#fTagline').value.trim(),
+      heroTitle: $('#fHeroTitle').value.trim(),
+      pet: {
+        name: $('#fName').value.trim(),
+        species: $('#fSpecies').value.trim(),
+        breed: $('#fBreed').value.trim(),
+        birthday: $('#fBirthday').value,
+        homeDate: $('#fHomeDate').value,
+        bio: $('#fBio').value,
+      },
+    };
+    try {
+      await api('/api/pet', { method: 'POST', body });
+      petFormDirty = false;
+      await load();
+      $('#siteLabel').textContent = state.pet.siteTitle || '';
+      toast('资料已保存，刷新主页即可看到');
+    } catch (err) { toast(err.message, true); }
+  });
+
+  $('#btnExport').addEventListener('click', async () => {
+    try {
+      const r = await api('/api/export', { method: 'POST' });
+      const url = r.url || '';
+      $('#exportInfo').innerHTML = '已生成：<a href="' + url + '" target="_blank" rel="noopener">' + (r.name || url) + '</a>';
+      toast('导出完成，点链接下载');
+    } catch (e) { toast(e.message, true); }
+  });
+
+  /* ---------------- 口令 ---------------- */
+  $('#passForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const a = $('#newPass').value;
+    const b = $('#newPass2').value;
+    if (a !== b) { toast('两次输入不一致', true); return; }
+    try {
+      await api('/api/admin/password', { method: 'POST', body: { password: a } });
+      $('#passForm').reset();
+      toast('口令已更新，请重新登录');
+      showGate();
+    } catch (err) { toast(err.message, true); }
+  });
+
+  /* ---------------- Tab ---------------- */
+  $('#tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-tab]');
+    if (!btn) return;
+    $$('#tabs button').forEach((b) => b.classList.toggle('active', b === btn));
+    $$('.panel').forEach((p) => p.classList.toggle('active', p.dataset.panel === btn.dataset.tab));
+  });
+
+  /* ---------------- 启动 ---------------- */
+  (async function boot() {
+    try {
+      const d = await api('/api/bootstrap');
+      if (d.admin) { hideGate(); await load(); }
+      else showGate();
+    } catch (e) {
+      showGate();
+    }
+  })();
+})();
+</script>
+</body>
+</html>
